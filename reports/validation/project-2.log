@@ -1,0 +1,24 @@
+# ecommerce-api-legacy — validação pós-refatoração (2026-11-03)
+$ ADMIN_TOKEN=*** npm start
+
+> desafio-arquitetura-ia-boilerplate@1.0.0 start
+> node src/app.js
+
+[2026-11-03T23:24:06.821Z] INFO LMS API rodando na porta 3000
+[2026-11-03T23:24:09.383Z] INFO Processando pagamento de 497 no cartão final 4444
+[2026-11-03T23:24:09.447Z] INFO Processando pagamento de 997 no cartão final 4444
+[2026-11-03T23:24:09.482Z] INFO Processando pagamento de 497 no cartão final 4000
+Killed
+
+$ smoke test
+POST /api/checkout -> 200 {"msg":"Sucesso","enrollment_id":2}
+POST /api/checkout -> 400 Pagamento recusado
+POST /api/checkout -> 404 Curso não encontrado
+POST /api/checkout -> 400 Bad Request
+POST /api/checkout -> 200 {"msg":"Sucesso","enrollment_id":3}
+GET /api/admin/financial-report -> 200 [{"course":"Clean Architecture","revenue":997,"students":[{"student":"Leonan","paid":997}]},{"course":"Docker","revenue":994,"students":[{"student":"Guilherme","paid":497},{"student":"Leonan","paid":4
+DELETE /api/users/1 -> 200 Usuário deletado
+GET /api/admin/financial-report -> 200 [{"course":"Clean Architecture","revenue":0,"students":[]},{"course":"Docker","revenue":497,"students":[{"student":"Guilherme","paid":497}]}]
+
+$ diff de status vs baseline
+sem diferenças: 8/8 requisições com o mesmo status

@@ -1,0 +1,51 @@
+# code-smells-project — validação pós-refatoração (2026-11-03)
+$ ADMIN_TOKEN=*** python app.py
+ * Serving Flask app 'src.app'
+ * Debug mode: off
+2026-11-03 20:24:02,234 INFO werkzeug: WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+2026-11-03 20:24:02,234 INFO werkzeug: Press CTRL+C to quit
+2026-11-03 20:24:04,881 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:04] "GET /produtos/999 HTTP/1.1" 404 -
+2026-11-03 20:24:04,892 INFO src.controllers.produto_controller: Produto criado com ID 11
+2026-11-03 20:24:04,893 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:04] "POST /produtos HTTP/1.1" 201 -
+2026-11-03 20:24:04,902 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:04] "POST /produtos HTTP/1.1" 400 -
+2026-11-03 20:24:05,031 INFO src.controllers.usuario_controller: Usuário criado: id=4
+2026-11-03 20:24:05,031 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:05] "POST /usuarios HTTP/1.1" 201 -
+2026-11-03 20:24:05,128 INFO src.controllers.usuario_controller: Login bem-sucedido: id=2
+2026-11-03 20:24:05,219 INFO src.controllers.usuario_controller: Login falhou
+2026-11-03 20:24:05,219 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:05] "POST /login HTTP/1.1" 401 -
+2026-11-03 20:24:05,233 INFO notifications: EMAIL: pedido 1 criado para usuario 2
+2026-11-03 20:24:05,233 INFO notifications: SMS: seu pedido foi recebido
+2026-11-03 20:24:05,233 INFO notifications: PUSH: novo pedido recebido pelo sistema
+2026-11-03 20:24:05,234 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:05] "POST /pedidos HTTP/1.1" 201 -
+2026-11-03 20:24:05,245 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:05] "POST /pedidos HTTP/1.1" 400 -
+2026-11-03 20:24:05,285 INFO notifications: Pedido 1 aprovado: preparar envio
+2026-11-03 20:24:05,297 INFO werkzeug: 127.0.0.1 - - [03/Nov/2026 20:24:05] "PUT /pedidos/1/status HTTP/1.1" 400 -
+2026-11-03 20:24:05,322 INFO src.controllers.produto_controller: Produto 11 deletado
+
+$ smoke test (método rota -> status corpo)
+GET / -> 200 {"endpoints":{"health":"/health","login":"/login","pedidos":"/pedidos","produtos":"/produtos","relatorios":"/relatorios/vendas","usuarios":"/usuarios"},"mensage
+GET /health -> 200 {"ambiente":"development","counts":{"pedidos":0,"produtos":10,"usuarios":3},"database":"connected","status":"ok","versao":"1.0.0"}
+GET /produtos -> 200 {"dados":[{"ativo":1,"categoria":"informatica","criado_em":"2026-11-03 23:24:01","descricao":"Notebook potente para jogos","estoque":10,"id":1,"nome":"Notebook 
+GET /produtos/busca?q=Mouse&preco_max=100 -> 200 {"dados":[{"ativo":1,"categoria":"informatica","criado_em":"2026-11-03 23:24:01","descricao":"Mouse sem fio ergon\u00f4mico","estoque":50,"id":2,"nome":"Mouse W
+GET /produtos/1 -> 200 {"dados":{"ativo":1,"categoria":"informatica","criado_em":"2026-11-03 23:24:01","descricao":"Notebook potente para jogos","estoque":10,"id":1,"nome":"Notebook G
+GET /produtos/999 -> 404 {"erro":"Produto n\u00e3o encontrado","sucesso":false}
+POST /produtos -> 201 {"dados":{"id":11},"mensagem":"Produto criado","sucesso":true}
+POST /produtos -> 400 {"erro":"Pre\u00e7o n\u00e3o pode ser negativo","sucesso":false}
+PUT /produtos/11 -> 200 {"mensagem":"Produto atualizado","sucesso":true}
+GET /usuarios -> 200 {"dados":[{"criado_em":"2026-11-03 23:24:02","email":"admin@loja.com","id":1,"nome":"Admin","tipo":"admin"},{"criado_em":"2026-11-03 23:24:02","email":"joao@ema
+GET /usuarios/1 -> 200 {"dados":{"criado_em":"2026-11-03 23:24:02","email":"admin@loja.com","id":1,"nome":"Admin","tipo":"admin"},"sucesso":true}
+POST /usuarios -> 201 {"dados":{"id":4},"sucesso":true}
+POST /login -> 200 {"dados":{"email":"joao@email.com","id":2,"nome":"Jo\u00e3o Silva","tipo":"cliente"},"mensagem":"Login OK","sucesso":true}
+POST /login -> 401 {"erro":"Email ou senha inv\u00e1lidos","sucesso":false}
+POST /pedidos -> 201 {"dados":{"pedido_id":1,"total":479.7},"mensagem":"Pedido criado com sucesso","sucesso":true}
+POST /pedidos -> 400 {"erro":"Estoque insuficiente para Mouse Wireless","sucesso":false}
+GET /pedidos -> 200 {"dados":[{"criado_em":"2026-11-03 23:24:05","id":1,"itens":[{"preco_unitario":89.9,"produto_id":2,"produto_nome":"Mouse Wireless","quantidade":2},{"preco_unita
+GET /pedidos/usuario/2 -> 200 {"dados":[{"criado_em":"2026-11-03 23:24:05","id":1,"itens":[{"preco_unitario":89.9,"produto_id":2,"produto_nome":"Mouse Wireless","quantidade":2},{"preco_unita
+PUT /pedidos/1/status -> 200 {"mensagem":"Status atualizado","sucesso":true}
+PUT /pedidos/1/status -> 400 {"erro":"Status inv\u00e1lido","sucesso":false}
+GET /relatorios/vendas -> 200 {"dados":{"desconto_aplicavel":0,"faturamento_bruto":479.7,"faturamento_liquido":479.7,"pedidos_aprovados":1,"pedidos_cancelados":0,"pedidos_pendentes":0,"ticke
+DELETE /produtos/11 -> 200 {"mensagem":"Produto deletado","sucesso":true}
+
+$ diff de status vs baseline (código original)
+sem diferenças: 22/22 requisições com o mesmo status
