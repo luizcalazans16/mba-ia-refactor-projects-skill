@@ -1,14 +1,12 @@
-const express = require('express');
-const AppManager = require('./AppManager');
-const { config } = require('./utils');
+// Entry point (`npm start`): carrega a configuração, monta a aplicação e sobe o servidor HTTP.
+const config = require('./config');
+const createApp = require('./createApp');
 
-const app = express();
-app.use(express.json());
-
-const manager = new AppManager();
-manager.initDb();
-manager.setupRoutes(app);
-
-app.listen(config.port, () => {
-    console.log(`Frankenstein LMS rodando na porta ${config.port}...`);
-});
+createApp(config)
+    .then(({ app, logger }) => {
+        app.listen(config.port, () => logger.info(`LMS API rodando na porta ${config.port}`));
+    })
+    .catch((err) => {
+        console.error('Falha ao iniciar a aplicação', err);
+        process.exit(1);
+    });
